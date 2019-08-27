@@ -244,3 +244,86 @@ class MaxIoUAssigner(BaseAssigner):
     """Assign a corresponding gt bbox or background to each bbox.
 ```
 
+#generate anchor
+##anchor_head.py
+```
+def __init__(self,...):
+        ...
+        self.anchor_generators = []
+        for anchor_base in self.anchor_base_sizes:
+            self.anchor_generators.append(
+                AnchorGenerator(anchor_base, anchor_scales, anchor_ratios))
+
+        self.num_anchors = len(self.anchor_ratios) * len(self.anchor_scales)
+```
+##anchor_generator.py
+```
+class AnchorGenerator(object):
+
+    def __init__(self, base_size, scales, ratios, scale_major=True, ctr=None):
+        self.base_size = base_size
+        self.scales = torch.Tensor(scales)
+        self.ratios = torch.Tensor(ratios)
+        self.scale_major = scale_major
+        self.ctr = ctr
+     -->self.base_anchors = self.gen_base_anchors()
+```
+##anchor_head.py
+```
+def loss():
+     ...
+  -->anchor_list, valid_flag_list = self.get_anchors(
+            featmap_sizes, img_metas)
+def get_anchors(self, featmap_sizes, img_metas):
+       
+        num_imgs = len(img_metas)
+        num_levels = len(featmap_sizes)
+
+        # since feature map sizes of all images are the same, we only compute
+        # anchors for one time
+        multi_level_anchors = []
+        for i in range(num_levels):
+         -->anchors = self.anchor_generators[i].grid_anchors(
+                featmap_sizes[i], self.anchor_strides[i])
+            multi_level_anchors.append(anchors)
+        anchor_list = [multi_level_anchors for _ in range(num_imgs)]
+
+        # for each image, we compute valid flags of multi level anchors
+        valid_flag_list = []
+        for img_id, img_meta in enumerate(img_metas):
+            multi_level_flags = []
+            for i in range(num_levels):
+                anchor_stride = self.anchor_strides[i]
+                feat_h, feat_w = featmap_sizes[i]
+                h, w, _ = img_meta['pad_shape']
+                valid_feat_h = min(int(np.ceil(h / anchor_stride)), feat_h)
+                valid_feat_w = min(int(np.ceil(w / anchor_stride)), feat_w)
+                flags = self.anchor_generators[i].valid_flags(
+                    (feat_h, feat_w), (valid_feat_h, valid_feat_w))
+                multi_level_flags.append(flags)
+            valid_flag_list.append(multi_level_flags)
+
+        return anchor_list, valid_flag_list
+ ```
+ ##anchor_traget.py
+ ```
+ for i in range(num_imgs):
+        assert len(anchor_list[i]) == len(valid_flag_list[i])
+        anchor_list[i] = torch.cat(anchor_list[i])
+        valid_flag_list[i] = torch.cat(valid_flag_list[i])
+        
+ (all_labels, all_label_weights, all_bbox_targets, all_bbox_weights,
+ pos_inds_list, neg_inds_list) = multi_apply(
+         anchor_target_single,
+         anchor_list,
+         valid_flag_list,
+         gt_bboxes_list,
+         gt_bboxes_ignore_list,
+         gt_labels_list,
+         img_metas,
+         target_means=target_means,
+         target_stds=target_stds,
+         cfg=cfg,
+         label_channels=label_channels,
+         sampling=sampling,
+         unmap_outputs=unmap_outputs)
