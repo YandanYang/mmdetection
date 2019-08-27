@@ -1,6 +1,7 @@
 #load model
-'''
+
 ##tools/train.py
+```
 model = build_detector(
      -->cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
 ##mmdet/model/builder.py
@@ -14,8 +15,9 @@ def build(cfg, registry, default_args=None):
         return nn.Sequential(*modules)
     else:
         return build_from_cfg(cfg, registry, default_args)
-'''   
+```   
 ##mmdet/utils/registry.py
+```
 def build_from_cfg(cfg, registry, default_args=None):
     ...
     obj_type = args.pop('type') #RPN
@@ -33,16 +35,20 @@ def build_from_cfg(cfg, registry, default_args=None):
         for name, value in default_args.items():
             args.setdefault(name, value)
     return obj_cls(**args)　#RPN(**args)
-
+```
 #train model
 ##tools/train.py
+```
 train_detector(model,
               datasets,
               cfg,
               distributed=distributed,
               validate=args.validate,
               logger=logger)
-#mmdet/apis/train.py              
+              
+```
+##mmdet/apis/train.py              
+```
 def train_detector(model,
                    dataset,
                    cfg,
@@ -91,9 +97,11 @@ def _non_dist_train(model, dataset, cfg, validate=False):
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
  -->runner.run(data_loaders, cfg.workflow, cfg.total_epochs)
- 
+```
+
  ##mmcv/runner/runner.py
- -->run()
+```
+-->run()
  -->def train(self, data_loader, **kwargs):
         self.model.train()
         self.mode = 'train'
@@ -116,7 +124,9 @@ def _non_dist_train(model, dataset, cfg, validate=False):
 
         self.call_hook('after_train_epoch')
         self._epoch += 1
+```
 ##mmdet/apis/train.py 
+```
 def batch_processor(model, data, train_mode):
  -->losses = model(**data)
     loss, log_vars = parse_losses(losses)
@@ -124,13 +134,35 @@ def batch_processor(model, data, train_mode):
     outputs = dict(
         loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
     return outputs
+```
 ##mmdet/models/anchor_heads/rpn_head.py
--->##mmdet/models/anchor_heads/anchor_head.py
+##mmdet/models/anchor_heads/anchor_head.py
 ##mmcv/runner/runner.py
+```
 def call_hook(self, fn_name):
         for hook in self._hooks:
             getattr(hook, fn_name)(self)
-            
+```         
 ##mmcv/runner/runner.py
+```
 def register_hook(self, hook, priority='NORMAL'):
 def build_hook()
+```
+##mmcv/runner/hooks/optimizer.py
+```
+class OptimizerHook(Hook):
+
+    def __init__(self, grad_clip=None):
+        self.grad_clip = grad_clip
+
+    def clip_grads(self, params):
+        clip_grad.clip_grad_norm_(
+            filter(lambda p: p.requires_grad, params), **self.grad_clip)
+
+ -->def after_train_iter(self, runner):
+        runner.optimizer.zero_grad()
+        runner.outputs['loss'].backward()
+        if self.grad_clip is not None:
+            self.clip_grads(runner.model.parameters())
+        runner.optimizer.step()
+```
