@@ -1,4 +1,5 @@
 #load model
+'''
 ##tools/train.py
 model = build_detector(
      -->cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
@@ -13,7 +14,7 @@ def build(cfg, registry, default_args=None):
         return nn.Sequential(*modules)
     else:
         return build_from_cfg(cfg, registry, default_args)
-       
+'''   
 ##mmdet/utils/registry.py
 def build_from_cfg(cfg, registry, default_args=None):
     ...
