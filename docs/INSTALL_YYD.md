@@ -1,27 +1,27 @@
-#20190901
+#20190901  
 conda create -n open-mmlab python=3.7 -y  
  2677  conda activate open-mmlab  
  2678  conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/\nconda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/\nconda config --set show_channel_urls yes
- 2679  conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
- 2680  conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
- 2681  conda config --set show_channel_urls yes
- 2683  mkdir yyd
- 2684  cd yyd
- 2685  git clone https://github.com/open-mmlab/mmdetection.git
- 2686  cd mmdetection
- 2689  conda install pytorch torchvision
- 2690  python setup.py develop
- 2692  conda install cython
- 2693  python setup.py develop
- 2694  conda install matplotlib
- 2695  python setup.py develop
- 2696  conda install scipy
- 2697  python setup.py develop
- 2698  conda install scikit-image
- 2699  python setup.py develop
- 2721  pip install mmcv
- 2722  pip install opencv-python
- 2723  python setup.py develop
+ 2679  conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/  
+ 2680  conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/  
+ 2681  conda config --set show_channel_urls yes  
+ 2683  mkdir yyd  
+ 2684  cd yyd  
+ 2685  git clone https://github.com/open-mmlab/mmdetection.git  
+ 2686  cd mmdetection  
+ 2689  conda install pytorch torchvision  
+ 2690  python setup.py develop  
+ 2692  conda install cython  
+ 2693  python setup.py develop  
+ 2694  conda install matplotlib  
+ 2695  python setup.py develop  
+ 2696  conda install scipy  
+ 2697  python setup.py develop  
+ 2698  conda install scikit-image  
+ 2699  python setup.py develop  
+ 2721  pip install mmcv  
+ 2722  pip install opencv-python  
+ 2723  python setup.py develop  
 Done!
 
 
